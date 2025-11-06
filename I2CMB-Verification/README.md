@@ -15,7 +15,7 @@ Verify an I2C Master Bridge (I2CMB) module that communicates using a Wishbone-co
 - Ensure both functional correctness and coverage closure using a layered testbench.
 
 ### I2CMB DUT Architecture
-<p align="center">
+<p align="left">
   <img width="480" height="295" src="./assets/i2cmb_architecture.png" alt="I2CMB Architecture"/>
   <br><em>Figure 1: I2CMB DUT Architecture</em>
 </p>
