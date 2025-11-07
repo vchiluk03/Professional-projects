@@ -47,8 +47,7 @@ To verify that the I2CMB Master correctly performs Wishbone-to-I²C transactions
 - Complete functional coverage closure with randomized and directed tests.
 
 ## DUT (Design Under Test)
-The I2CMB Master (iicmb_m_wb.vhd) acts as a Wishbone slave and a multi-bus I²C master, capable of driving several independent I²C buses.
-It asserts an interrupt upon completion or error of transactions.
+The I2CMB Master (iicmb_m_wb.vhd) operates as a Wishbone slave, receiving configuration and command writes from a CPU or controller, and as a multi-bus I²C master, generating protocol-accurate I²C signals to communicate with multiple external devices. It asserts an interrupt signal to indicate transaction completion or to report an error condition.
 <p align="center"> <img src="./assets/i2cmb_wishbone_i2c_interfacing.png" width="480"/> <br><em>Figure 1 – I2CMB master interfacing a Wishbone slave with multiple I²C buses and interrupt signaling.</em> </p>
 
 ### Internal Architecture
@@ -76,7 +75,8 @@ The design exposes four 8-bit registers accessible via the Wishbone bus, each se
 Key bits: **E** – Enable | **IE** – Interrupt Enable | **BB** – Bus Busy | **DON/NAK/AL/ERR** – Command status.
 
 ## Top-Level Testbench
-The top module instantiates the DUT along with Wishbone and I²C interfaces and connects them to the test environment.
+The top module instantiates the DUT along with the Wishbone and I²C interfaces. These interfaces provide physical connectivity for the testbench and are passed into the verification environment created by the i2cmb_test class, which coordinates stimulus generation, checking, and coverage collection.
+This setup allows the test class to drive transactions from the generator through the Wishbone agent and monitor responses through the I²C agent.
 ```systemverilog
 module top;
   wb_if wb_if_inst();
@@ -90,19 +90,20 @@ module top;
   );
 endmodule
 ```
-<p align="center"> <img src="./assets/tb_top.png" width="650"/> <br><em>Figure 3 – Top-level testbench connecting DUT, Wishbone bus, and I²C slave model.</em> </p>
+<p align="center"> <img src="./assets/tb_top.png" width="650"/> <br><em>Figure 3 – Top-level testbench showing DUT, Wishbone/I²C interfaces, and I2C test environment hierarchy.</em> </p>
 
 ## Layered Verification Environment
 A UVM-style layered testbench built on NCSU base classes separates configuration, transaction generation, monitoring, and checking.
 <p align="center"> <img src="./assets/layered_tb.png" width="800"/> <br><em>Figure 4 – Hierarchical environment with generator, predictor, scoreboard, and coverage blocks.</em> </p>
 
 ### Environment Components
-- Wishbone Agent – Generates bus transactions to access DUT registers.
-- I²C Agent – Implements a reactive I²C slave model for ACK/NACK responses.
-- i2cmb_predictor – Models expected I²C behavior for given Wishbone commands.
-- i2cmb_scoreboard – Compares DUT outputs to predicted values.
-- i2cmb_coverage - Collects functional coverage across commands and FSM states.
-- Assertions – Monitor protocol timing and handshake ordering on both buses.
+- **i2cmb_generator** – Generates randomized and directed transactions that stimulate the DUT through the Wishbone interface.
+- **Wishbone Agent** – Drives register-level bus transactions to access and control the DUT.
+- **I²C Agent** – Implements a reactive I²C slave model that provides ACK/NACK and data responses.
+- **i2cmb_predictor** – Models the expected I²C behavior for each Wishbone command and predicts DUT outputs.
+- **i2cmb_scoreboard** – Compares DUT outputs against predicted values to ensure data integrity and protocol correctness.
+- **i2cmb_coverage** – Collects functional coverage for command types, bus switching, and FSM transitions.
+- **Assertions** – Check timing and protocol handshakes across both Wishbone and I²C interfaces.
 
 Each agent extends ncsu_agent, following UVM methodology principles for driver, monitor, and configuration management.
 
@@ -116,7 +117,7 @@ From i2cmb_test_plan.xlsx, key coverage items and directed tests:
 | **Assertions** | `assert_irq_check`, `check_start`, `ack_check` | Ensure correct IRQ, START, and ACK/NACK behavior |
 | **Functional Tests** | `i2cmb_generator_test`, `check_base_test` | Verify Wishbone → I²C data flow |
 | **Coverage Models** | `i2cmb_coverage_cg`, `scbd_coverage_cg` | Monitor done bit, core enable, and scoreboard matches |
-| **FSM Checks** | `fsmr_check`, FSM bit/byte coverage | Confirm complete FSM traversal |
+| **FSM Checks** | `fsmr_check`, FSM Bit/Byte Coverage | Confirm complete FSM traversal |
 | **Stress Regression** | Randomized tests + multiple seeds | Ensure robust bus switching and error recovery |
 
 ## Simulation Setup
@@ -145,7 +146,7 @@ make view_coverage
 # Execute full regression (runs all tests + merges UCDB)
 make regress
 ```
-### Manual Compile and Debug Flow
+### Interactive Simulation and Debug Flow
 ``` bash
 # Clean existing work libraries and logs
 make clean
