@@ -7,7 +7,7 @@ I built this project to strengthen my understanding of hardware interrupt handli
 An Interrupt Controller is a hardware block that receives interrupt signals from different peripherals (like UARTs, timers, or GPIOs) and decides which one should reach the CPU first.
 
 Instead of the CPU constantly polling each device, interrupts allow it to focus on other work until a peripheral actually requires service.
-When multiple interrupts occur simultaneously, the controller resolves them using priority information — ensuring that critical events (like timers or DMA completions) are serviced before lower-priority ones.
+When multiple interrupts occur simultaneously, the controller resolves them using priority information, ensuring that critical events (like timers or DMA completions) are serviced before lower-priority ones.
 
 In real-world SoCs, interrupt controllers are essential for balancing system responsiveness and efficiency. Modern designs like ARM GIC, RISC-V PLIC, and x86 APIC follow the same core principle, just on a much larger scale.
 
@@ -25,9 +25,9 @@ Priorities are programmable at runtime through an APB-like interface.
 - Priority-based arbitration among multiple interrupt sources
 - FSM-driven control for request → service → clear sequence
 - Configurable number of peripherals
-- Runtime test selection using $value$plusargs("test_name=%s", test_name);
+- Runtime test selection using `$value$plusargs("test_name=%s", test_name);`
 - APB-style register interface for configuration
----
+
 ## Internal Architecture
 ### FSM States
 | **State** | **Description** |
@@ -42,7 +42,7 @@ These registers are written or read through an **APB-like interface**.
 
 ### About the “APB-like” Interface
 This interface borrows APB signal naming (`paddr_i`, `pwrite_i`, `penable_i`, `pready_o`, etc.) for familiarity,  
-but it’s a simplified version — it doesn’t fully implement the APB SETUP/ACCESS phase protocol.
+but it is a simplified version and does not fully implement the APB SETUP/ACCESS phase protocol.
 
 | **APB Spec** | **This Design** |
 |---------------|----------------|
@@ -52,7 +52,7 @@ but it’s a simplified version — it doesn’t fully implement the APB SETUP/A
 | `PSLVERR` | Modeled as `perror_o` (unused) |
 
 It’s **APB-style** in structure, but functionally a simple register access interface for learning and simulation.
----
+
 ## Verification Environment
 **Testbench:** `intp_ctrl_tb.v`  
 **Task File:** `tasks.v`
@@ -72,7 +72,7 @@ Each test scenario is selected dynamically through runtime plusargs, allowing qu
 | `LOWEST_PERP_CTRL_w/HIGHEST_PRIORITY` | Lowest-index peripherals get highest priority. |
 | `LOWEST_PERP_CTRL_w/LOWEST_PRIORITY` | Lowest-index peripherals get lowest priority. |
 | `PERP_CTRL_RANDOM_PRIORITY` | Each peripheral gets a unique random priority using `$urandom_range`. |
----
+
 ## Simulation Flow
 ``` bash 
 # Compilation
@@ -108,15 +108,14 @@ Peripheral Controller 15 raised interrupt request, priority = 12
 - Understanding the difference between APB protocol and APB-style modeling
 
 Working on this project gave me a much clearer sense of how hardware prioritization and interrupt dispatch work inside real SoCs.
-Debugging priority conflicts taught me how easily race conditions appear when control logic and register access overlap — and how FSM structuring can resolve them cleanly.
+Debugging priority conflicts taught me how easily race conditions appear when control logic and register access overlap, and how FSM structuring can resolve them cleanly.
 
 ## References
-AMBA APB Specification, ARM Ltd.
-ChipVerify – Verilog Testbench Tutorials
-ASIC-World – Verilog Examples
-Verification Guide – SystemVerilog Plusargs
+- AMBA APB Specification, ARM Ltd.
+- ChipVerify – Verilog Testbench Tutorials.
+- ASIC-World – Verilog Examples.
+- Verification Guide – SystemVerilog Plusargs.
 
--- 
 Author: Vishnuvardhan Chilukoti
 Project: Interrupt Controller — Design & Verification (Verilog)
 Email: vchiluk3@gmail.com
