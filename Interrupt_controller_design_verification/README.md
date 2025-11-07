@@ -41,8 +41,7 @@ Each peripheral has a register (`priority_regA[i]`) that holds its priority leve
 These registers are written or read through an **APB-like interface**.
 
 ### About the “APB-like” Interface
-This interface borrows APB signal naming (`paddr_i`, `pwrite_i`, `penable_i`, `pready_o`, etc.) for familiarity,  
-but it is a simplified version and does not fully implement the APB SETUP/ACCESS phase protocol.
+This interface borrows APB signal naming (`paddr_i`, `pwrite_i`, `penable_i`, `pready_o`, etc.) for familiarity, but it is a simplified version and does not fully implement the APB SETUP/ACCESS phase protocol.
 
 | **APB Spec** | **This Design** |
 |---------------|----------------|
@@ -116,8 +115,8 @@ Debugging priority conflicts taught me how easily race conditions appear when co
 - ASIC-World – Verilog Examples.
 - Verification Guide – SystemVerilog Plusargs.
 
-Author: Vishnuvardhan Chilukoti
-Project: Interrupt Controller — Design & Verification (Verilog)
-Email: vchiluk3@gmail.com
+- Author: Vishnuvardhan Chilukoti
+- Project: Interrupt Controller — Design & Verification (Verilog)
+- Email: vchiluk3@gmail.com
 
 
