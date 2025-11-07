@@ -1,8 +1,5 @@
-# 🧩 Verification of I2C Multiple-Bus (I2CMB) Master with Wishbone Interface
-> Complete SystemVerilog verification of a multi-bus I²C Master with Wishbone interface, achieving full coverage closure through a layered UVM-style environment.
-
-This project demonstrates the functional verification of an I²C Multiple-Bus (I2CMB) Master — an IP core that bridges a Wishbone bus interface with multiple I²C serial buses.
-Developed as part of ECE 745 – ASIC Verification at North Carolina State University, this work implements the full verification lifecycle using SystemVerilog and the NCSU UVM-style base class library, including interface verification, layered testbench construction, coverage planning, and closure.
+# Functional Verification of I²C Multi-Bus Master (Wishbone–I²C Bridge)
+This project presents the functional verification of an I²C Multi-Bus Master — a Wishbone–I²C bridge IP capable of controlling multiple I²C buses through a memory-mapped Wishbone interface. Developed as part of ECE 745 : ASIC Verification at North Carolina State University, this work implements the full verification lifecycle using SystemVerilog and the NCSU UVM-style base class library, including interface verification, layered testbench construction, coverage planning, and closure.
 
 ---
 ## Repository Structure
@@ -67,7 +64,7 @@ The DUT integrates several key sub-modules:
 <p align="center"> <img src="./assets/i2cmb_architecture.png" width="700"/> <br><em>Figure 2 – Detailed internal architecture showing FSM hierarchy and bus multiplexer.</em> </p>
 
 ## Register Map (Wishbone Interface)
-The design exposes four 8-bit registers accessible via the Wishbone bus — each serving a specific control or monitoring purpose.
+The design exposes four 8-bit registers accessible via the Wishbone bus, each serving a specific control or monitoring purpose.
 
 | Register | Offset | Access | Description |
 |-----------|:-------:|:-------:|-------------|
