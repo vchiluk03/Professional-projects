@@ -1,6 +1,7 @@
 # Verification of LC-3 CPU decode stage
 This repository documents the design verification environment and methodology used to verify the Decode Stage of the LC-3 CPU microarchitecture.
-The verification was carried out using SystemVerilog and UVM, as part of ECE 748 — Advanced Verification with UVM at North Carolina State University.
+
+The verification was carried out using SystemVerilog and UVM, as part of ECE 748 (Advanced Verification with UVM at North Carolina State University).
 
 ## Project Overview
 ### Objective
