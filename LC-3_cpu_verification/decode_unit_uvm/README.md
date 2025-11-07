@@ -43,7 +43,7 @@ decode_unit_uvm/
 
 ## Project Overview
 ### Objective
-Verify the LC-3 Decode Unit, which interprets the fetched instruction (IR) and generates control signals that steer the subsequent pipeline stages — Execute, Memory, and Writeback.
+Verify the LC-3 Decode Unit, which interprets the fetched instruction (IR) and generates control signals that steer the subsequent pipeline stages: Execute, Memory, and Writeback.
 
 ### Verification Goals
 - Validate correct decoding of all LC-3 instruction classes.
@@ -52,9 +52,10 @@ Verify the LC-3 Decode Unit, which interprets the fetched instruction (IR) and g
 - Detect and report mismatches between predicted and actual decode behavior
 
 ## LC-3 Decode Unit Architecture
-![LC-3 Decode Architecture](./assets/Lc-3_decode_architecture.png)
-
-*Figure 1: LC-3 Decode Stage architecture (adapted from LC3_DesignSpec.pdf)*
+<p align="center">
+  <img src="./assets/Lc-3_decode_architecture.png" alt="LC-3 Decode Architecture" width="650"/>
+  <br><em>Figure 1 – LC-3 Decode Stage architecture (adapted from LC3_DesignSpec.pdf)</em>
+</p>
 
 The Decode Unit receives a 16-bit instruction and the next-PC (npc_in) from the Fetch stage and produces:
 - IR → Propagated instruction register value
@@ -63,9 +64,10 @@ The Decode Unit receives a 16-bit instruction and the next-PC (npc_in) from the 
 - W_Control → Writeback source selection
 - enable_decode_out → Decode enable flag
 
-![decode_internal](./assets/decode_internal_details.png)
-
-*Figure 2 – Internal Decode logic from LC3_DesignSpec.pdf showing opcode decoding and control generation*
+<p align="center">
+  <img src="./assets/decode_internal_details.png" alt="Decode Internal Details" width="500"/>
+  <br><em>Figure 2 – Internal Decode logic from LC3_DesignSpec.pdf showing opcode decoding and control generation.</em>
+</p>
 
 ### Verification Flow
 A modular UVM testbench was constructed to verify the Decode Unit in isolation.
@@ -75,8 +77,10 @@ The environment also includes configuration classes:
 - **decode_env_configuration** – initializes the environment and connects agents.
 - **decode_in_configuration / decode_out_configuration** – manage individual agent configurations.
 
-![Decode Testbench Architecture](./assets/decode_tb_block.png)
-*Figure 3 – UVM environment architecture for Decode Unit verification*
+<p align="center">
+  <img src="./assets/decode_tb_block.png" alt="Decode Testbench Architecture" width="600"/>
+  <br><em>Figure 3 – UVM environment architecture for Decode Unit verification.</em>
+</p>
 
 | Component | Description |
 |------------|-------------|
