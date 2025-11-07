@@ -90,7 +90,7 @@ module top;
   );
 endmodule
 ```
-<p align="center"> <img src="./assets/tb_top.png" width="650"/> <br><em>Figure 3 – Top-level testbench showing DUT, Wishbone/I²C interfaces, and I2C test environment hierarchy.</em> </p>
+<p align="center"> <img src="./assets/tb_top_cropped.png" width="650"/> <br><em>Figure 3 – Top-level testbench showing DUT, Wishbone/I²C interfaces, and I2C test environment hierarchy.</em> </p>
 
 ## Layered Verification Environment
 A UVM-style layered testbench built on NCSU base classes separates configuration, transaction generation, monitoring, and checking.
