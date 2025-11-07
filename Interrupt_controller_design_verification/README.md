@@ -1,8 +1,5 @@
 # Interrupt Controller - Design and Verification
-This repository documents my design and verification of a programmable Interrupt Controller in Verilog HDL.  
-It manages multiple interrupt requests from peripherals, prioritizes them at runtime, and forwards the highest-priority interrupt to the CPU.  
-I built this project to strengthen my understanding of hardware interrupt handling, priority arbitration, and bus-based configuration.  
-I built this project independently as part of my ongoing learning in RTL design and verification.
+This repository documents my design and verification of a programmable Interrupt Controller in Verilog HDL. It manages multiple interrupt requests from peripherals, prioritizes them at runtime, and forwards the highest-priority interrupt to the CPU. I built this project to strengthen my understanding of hardware interrupt handling, priority arbitration, and bus-based configuration. I built this project independently as part of my ongoing learning in RTL design and verification.
 
 ## What Is an Interrupt Controller?
 An Interrupt Controller is a hardware block that receives interrupt signals from different peripherals (like UARTs, timers, or GPIOs) and decides which one should reach the CPU first.
