@@ -15,6 +15,7 @@ Verify the LC-3 Decode Unit, which interprets the fetched instruction (IR) and g
 
 ### LC-3 Decode Unit Architecture
 ![I2CMB Architecture](./assets/Lc-3_decode_architecture.png)
+
 *Figure 1: LC-3 Decode Stage architecture (adapted from LC3_DesignSpec.pdf)*
 
 The Decode Unit receives a 16-bit instruction and the next-PC (npc_in) from the Fetch stage and produces:
