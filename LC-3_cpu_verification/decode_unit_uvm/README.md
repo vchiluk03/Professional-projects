@@ -1,0 +1,1 @@
+# Verification of LC-3 CPU decode stage
