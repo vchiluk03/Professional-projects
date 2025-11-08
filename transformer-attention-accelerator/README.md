@@ -43,7 +43,7 @@ To address this challenge, the design introduces a dedicated hardware accelerato
 
 ## Where It Fits Inside a Real SoC
 <p align="center">
-  <img src="docs/soc_integration_overview.png" width="500"/>
+  <img src="docs/soc_integration_overview.png" width="700"/>
 </p>
 <p align="center"><b>Figure 2 – Typical SoC placement: Attention Accelerator IP inside an NPU/AI subsystem.</b></p>
 
