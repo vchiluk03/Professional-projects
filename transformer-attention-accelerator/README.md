@@ -25,7 +25,7 @@ Design and synthesize a **dedicated ASIC accelerator** implementing the **Scaled
 
 **Attention(Q, K, V) = softmax((Q × Kᵀ) / √dₖ) × V**
 <p align="center">
-  <img src="docs/attention_block_diagram.png" width="500"/>
+  <img src="docs/attention_block_diagram.png" width="300"/>
 </p>
 <p align="center"><b>Figure 1 – Transformer Attention dataflow: Q, K, V → Score (QKᵀ) → Output (SV).</b></p>
 
@@ -51,7 +51,7 @@ Check out the [Example: Why This Design Matters in Real SoCs](docs/attention_acc
 
 ## Where It Fits Inside a Real SoC
 <p align="center">
-  <img src="docs/soc_integration_overview.png" width="300"/>
+  <img src="docs/soc_integration_overview.png" width="500"/>
 </p>
 <p align="center"><b>Figure 2 – Typical SoC placement: Attention Accelerator IP inside an NPU/AI subsystem.</b></p>
 
