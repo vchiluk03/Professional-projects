@@ -25,7 +25,7 @@ Design and synthesize a **dedicated ASIC accelerator** implementing the **Scaled
 
 **Attention(Q, K, V) = softmax((Q × Kᵀ) / √dₖ) × V**
 <p align="center">
-  <img src="docs/attention_block_diagram.png" width="300"/>
+  <img src="docs/attention_block_diagram.png" width="450"/>
 </p>
 <p align="center"><b>Figure 1 – Transformer Attention dataflow: Q, K, V → Score (QKᵀ) → Output (SV).</b></p>
 
