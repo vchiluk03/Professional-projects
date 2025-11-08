@@ -146,6 +146,7 @@ end
 | Total Cycles | 3,432 | cycles | Full attention pass |
 | Total Latency | 34,320 | ns | 10 ns × 3,432 |
 | Efficiency | 2.329 × 10⁻⁹ | ns⁻¹·µm⁻² | 1 / (Delay × Area) |
+
 The design was synthesized using the **Nangate 45 nm Open Cell Library (PDK v1.2)** in **Synopsys Design Compiler (T-2022.03-SP4)**. This open-source 45 nm technology provides realistic area and timing analysis, balancing performance and power without using any proprietary PDKs.
 
 ## Verification Summary
