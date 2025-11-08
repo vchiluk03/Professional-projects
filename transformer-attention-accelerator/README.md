@@ -82,6 +82,7 @@ Each state controls:
 | `dut_valid` | In | Valid input window |
 | `dut_ready` | Out | High = ready or completed |
 | `dut__tb__sram_*` | In/Out | 4× SRAM interfaces (Input, Weight, Result, Scratchpad) |
+
 **Protocol behavior**  
 1️. After reset: `dut_ready = 1` (IDLE)  
 2️. Testbench asserts `dut_valid` → FSM begins computation(`dut_ready = 0`)  
