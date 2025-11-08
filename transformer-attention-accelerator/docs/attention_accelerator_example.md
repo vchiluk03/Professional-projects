@@ -5,14 +5,14 @@ This document provides an intuitive, real-world explanation of why the **Scaled 
 Imagine you’re reading a sentence:
 > “The cat sat on the mat because it was tired.”
 
-When the Transformer processes the word “it”, it must decide whether “it” refers to the **cat** or the **mat**. To do this, it calculates how strongly “it” relates to every other word — that’s the **attention mechanism**.
+When the Transformer processes the word “it”, it must decide whether “it” refers to the **cat** or the **mat**. To do this, it calculates how strongly “it” relates to every other word. This process is known as the **attention mechanism**.
 
 It builds three key matrices:
 - **Q (Query):** Represents the current word (“it”)
 - **K (Key):** Represents all other words
 - **V (Value):** Contains the meaning of each word
 <p align="center">
-  <img src="../docs/query_key_generation.png" width="400"/>
+  <img src="../docs/query_key_generation.png" width="500"/>
 </p>
 <p align="center"><b>Figure 1 – Query and Key generation.</b></p>
 
@@ -20,7 +20,7 @@ Then it computes:
 > **S = Q × Kᵀ** → attention scores  
 > **Z = softmax(S) × V** → weighted output
 <p align="center">
-  <img src="../docs/score_matrix_multiplication.png" width="400"/>
+  <img src="../docs/score_matrix_multiplication.png" width="500"/>
 </p>
 <p align="center"><b>Figure 2 – Score matrix and final weighted output computation.</b></p>
 
