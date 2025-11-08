@@ -51,7 +51,7 @@ Check out the [Example: Why This Design Matters in Real SoCs](docs/attention_acc
 
 ## Where It Fits Inside a Real SoC
 <p align="center">
-  <img src="docs/soc_integration_overview.png" width="500"/>
+  <img src="docs/soc_integration_overview.png" width="300"/>
 </p>
 <p align="center"><b>Figure 2 – Typical SoC placement: Attention Accelerator IP inside an NPU/AI subsystem.</b></p>
 
@@ -79,7 +79,7 @@ Each state controls:
 
 ## Handshake Protocol
 <p align="center">
-  <img src="docs/dut_handshake_timing.png" width="500"/>
+  <img src="docs/dut_handshake_timing.png" width="700"/>
 </p>
 <p align="center"><b>Figure 3 – DUT ↔ Testbench handshake timing for <code>dut_valid</code> / <code>dut_ready</code>.</b></p>
 
@@ -97,7 +97,7 @@ Each state controls:
 
 ## SRAM Architecture & Timing
 <p align="center">
-  <img src="docs/sram_interface_ports.png" width="500"/>
+  <img src="docs/sram_interface_ports.png" width="700"/>
 </p>
 <p align="center"><b>Figure 4 – Four SRAM interfaces mapped to Input, Weight, Result, Scratchpad.</b></p>
 
@@ -190,7 +190,7 @@ make all CLOCK_PER=10
 | Latency | 34,320 ns |
 | Logic Area | 12,508.9 µm² |
 | FSM States | 15 |
-| Functional Status | ✅ All testcases passed |
+| Functional Status | All testcases passed |
 
 ## Conclusion
 The **Transformer Scaled Dot-Product Attention Accelerator** implements Q/K/V, Score, and Output stages entirely in hardware with deterministic timing.  
