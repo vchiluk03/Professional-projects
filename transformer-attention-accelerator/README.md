@@ -151,8 +151,7 @@ The design was synthesized using the **Nangate 45 nm Open Cell Library (PDK v1.2
 
 ## Verification Summary
 - **Simulator**: ModelSim (QuestaSim)  
-- **Testcases**: Positive (`inputs/`) and Negative (`negative_inputs/`)  
-- **Coverage**: All 15 FSM states hit  
+- **Testcases**: Positive (`inputs/`) and Negative (`negative_inputs/`)   
 - **Golden reference**: Software model compares for Q, K, V, S, Z  
 - **Timing**: SRAM latency & RAW rules validated in waveforms
 
