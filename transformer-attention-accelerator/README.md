@@ -1,121 +1,262 @@
+# Transformer Scaled Dot-Product Attention Accelerator (ASIC Design)
 
+This project presents the **design and synthesis of a Scaled Dot-Product Attention Accelerator**, the mathematical heart of the Transformer architecture used in modern NLP and AI systems.  
+Developed as part of **ECE 564 – ASIC Design and Synthesis** at **North Carolina State University**, this design realizes the full attention pipeline in **Verilog/SystemVerilog** with a 15-state FSM, four SRAMs, and a pipelined multiply-accumulate datapath.
 
+---
 
-
-# ECE464/564 HW6
-This document contains the instructions and commands to setup HW6 directory. In the folder tree of this HW, several ```Makefile```s are used to 
-
-## Overview
-- [Unzip](#unzip)
-- [Start Designing](#start-designing)
-- [Synthesis](#synthesis)
-- [Submission](#submission)
-- [Appendix](#appendix)
-
-## Unzip
-Once you have placed ```HW6.zip``` at desired directory. Launch a terminal at that directory and use the following command to unzip.
+## 📂 Repository Structure
 ```bash
-unzip HW6.zip
+transformer-attention-accelerator/
+├── rtl/                 # Synthesizable Verilog RTL (MyDesign.sv)
+├── testbench/           # SystemVerilog testbench, SRAM models
+├── run/                 # Makefile, waveform setup, logs
+├── synthesis/           # DC synthesis scripts and reports
+├── inputs/              # Positive testcases
+├── negative_inputs/     # Negative testcases
+├── docs/                # Figures and example explanation
+│   └── attention_accelerator_example.md   # Linked example document
+└── README.md
 ```
-You should find the unzipped HW6 folder ```HW6/```
 
-## Start Designing
-### Setup script
+---
 
-```HW6/setup.sh``` is provided to load Modelsim and Synopsys
+## 🎯 Objective
+Design and synthesize a **dedicated ASIC accelerator** implementing the **Scaled Dot-Product Attention** mechanism.  
+The goal is to translate software matrix operations into a **deterministic, area-efficient FSM** capable of:
+- Computing Q, K, V matrices  
+- Forming the Score matrix **S = Q × Kᵀ**  
+- Producing the final Attention output **Z = S × V**
 
-To source the script:
-```bash
-source setup.sh
+---
+
+## 📘 System Overview
+
+**Attention(Q, K, V) = softmax((Q × Kᵀ) / √dₖ) × V**
+
+<p align="center">
+  <img src="docs/attention_block_diagram.png" width="700"/>
+</p>
+<p align="center"><b>Figure 1 – Transformer Attention dataflow: Q, K, V → Score (QKᵀ) → Output (SV).</b></p>
+
+**Key operations implemented**
+1. **Q, K, V formation**  
+&nbsp;&nbsp;&nbsp;&nbsp;• Q = I × Wq  
+&nbsp;&nbsp;&nbsp;&nbsp;• K = I × Wk  
+&nbsp;&nbsp;&nbsp;&nbsp;• V = I × Wv  
+2. **Score matrix**: S = Q × Kᵀ  
+3. **Final output**: Z = S × V
+
+---
+
+## 🚀 Motivation — Why Dedicated Hardware?
+
+Transformer models have changed how modern AI understands language, speech, and vision. They allow computers to process entire sentences or images all at once, rather than step by step like older RNNs.  
+At the center of every Transformer is the **attention mechanism**, which decides how much “focus” to give to each word or token when generating meaning. But this process involves thousands of matrix multiplications — heavy mathematical operations that must run again and again for every layer of the model.  
+
+Running these computations on general-purpose CPUs or GPUs is fast, but still consumes a lot of energy and memory bandwidth. For small embedded devices or real-time applications (like voice assistants, translation chips, or on-device generative AI), that level of compute is inefficient and too slow.  
+
+This project was designed to solve that problem. It builds a **dedicated hardware accelerator** — a focused piece of logic that performs the attention math directly in silicon. Instead of relying on large processors, this accelerator performs  
+**Attention(Q, K, V) = softmax((Q × Kᵀ) / √dk) × V**  
+using a tightly controlled FSM and local SRAMs. The result is a faster, energy-efficient, and predictable hardware unit that can be integrated into a real SoC to power Transformer-based workloads.
+
+➡️ **Want to see an intuitive real-world example?**  
+Check out the [Example: Why This Design Matters in Real SoCs](docs/attention_accelerator_example.md).
+
+---
+
+## 🧩 Where It Fits Inside a Real SoC
+
+<p align="center">
+  <img src="docs/soc_integration_overview.png" width="780"/>
+</p>
+<p align="center"><b>Figure 2 – Typical SoC placement: Attention Accelerator IP inside an NPU/AI subsystem.</b></p>
+
+In a full System-on-Chip (SoC), this accelerator would be part of the **AI or NPU subsystem**.  
+The host CPU sends control signals through a memory-mapped interface (AXI or Wishbone) and loads the input/weight matrices into on-chip SRAM. Once computation begins, the accelerator handles all the Q, K, V, S, and Z computations internally.  
+When done, it signals completion to the CPU (using `dut_ready` or an interrupt).  
+
+This type of block is typically used in:
+- **Edge AI processors** – smartphones, IoT, automotive SoCs  
+- **Neural Processing Units (NPUs)** – to accelerate Transformer layers  
+- **Vision Transformers (ViT)** – where spatial attention replaces convolution  
+- **Speech and NLP chips** – for real-time attention inference  
+
+---
+
+## 🧠 Control and FSM Operation
+
+The design is orchestrated by a **15-state FSM** managing all compute and memory phases.
+
+**FSM sequence**
 ```
-This script also enables you to <kbd>Tab</kbd> complete ```make``` commands
+IDLE → READ_DIMENSIONS → Q/K/V MULTIPLY + WRITE
+→ SCORE_MATRIX → WRITE_SCORE_RESULT
+→ ATTENTION_MATRIX → WRITE_ATTENTION_MATRIX → COMPLETE
+```
 
-### HW6 description
+Each state controls:
+- SRAM read/write enables and addresses  
+- Row/column counters and element iterators  
+- `multiply_accum` for MAC operations  
+- `dut_ready` / `dut_valid` handshake
 
-The document is located in ```HW6/HW_specification/```
+---
 
-### Where to put your design
+## 🔁 Handshake Protocol
 
-A Verilog file ```HW6/rtl/dut.sv``` is provided with all the ports already connected to the test fixture
+<p align="center">
+  <img src="docs/dut_handshake_timing.png" width="700"/>
+</p>
+<p align="center"><b>Figure 3 – DUT ↔ Testbench handshake timing for <code>dut_valid</code> / <code>dut_ready</code>.</b></p>
 
-### How to compile your design
+| Signal | Direction | Description |
+|:--|:--|:--|
+| `clk` | In | System clock |
+| `reset_n` | In | Active-low reset |
+| `dut_valid` | In | Valid input window |
+| `dut_ready` | Out | High = ready or completed |
+| `dut__tb__sram_*` | In/Out | 4× SRAM interfaces (Input, Weight, Result, Scratchpad) |
 
-To compile your design
+**Protocol behavior**  
+1️⃣ After reset: `dut_ready = 1` (IDLE)  
+2️⃣ Testbench asserts `dut_valid` → FSM starts; `dut_ready = 0`  
+3️⃣ On completion: `dut_ready = 1` again
 
-Change directory to ```HW6/run/``` 
+---
+
+## 💾 SRAM Architecture & Timing
+
+<p align="center">
+  <img src="docs/sram_interface_ports.png" width="700"/>
+</p>
+<p align="center"><b>Figure 4 – Four SRAM interfaces mapped to Input, Weight, Result, Scratchpad.</b></p>
+
+- **Input SRAM**: Stores input embeddings (I) + dimensions  
+- **Weight SRAM**: Stores Wq, Wk, Wv tiles  
+- **Result SRAM**: Holds Q, K, V, S, Z matrices sequentially  
+- **Scratchpad SRAM**: Holds **Kᵀ** and **transposed V** for reuse  
+
+<p align="center">
+  <img src="docs/sram_timing_diagram.png" width="780"/>
+</p>
+<p align="center"><b>Figure 5 – One-cycle read latency and safe scheduling to avoid RAW hazards.</b></p>
+
+**Timing rules enforced by FSM**
+- Read data appears **one cycle** after address  
+- Writes take effect on the **next cycle**  
+- No immediate **read-after-write to the same address**  
+- Read/write phases separated to guarantee correctness
+
+---
+
+## ⚙️ RTL Highlights (MyDesign.sv)
+
+- **MAC pipeline**: `multiply_accum` accumulates partial products per output element  
+- **Transposed V optimization**: store V column-major in scratchpad for fast **Z = S × V**  
+- **SystemVerilog features**: `typedef enum logic [3:0]` states, `logic` typing for clean synthesis  
+- **Handshake**: `dut_valid` to start; `dut_ready` asserted when all outputs are committed to SRAM
+
+**Representative snippet**
+```verilog
+always @(posedge clk or negedge reset_n) begin
+  if (!reset_n)
+    current_state <= IDLE;
+  else
+    current_state <= next_state;
+end
+```
+
+---
+
+## 🔌 Interface Summary
+
+| Signal | Dir | Width | Description |
+|:--|:--|:--|:--|
+| `reset_n` | In | 1 | Active-low reset |
+| `clk` | In | 1 | System clock |
+| `dut_valid` | In | 1 | Input is valid / start |
+| `dut_ready` | Out | 1 | Completion / ready for next |
+| `dut__tb__sram_input_*` | In/Out | 32 | Input SRAM |
+| `dut__tb__sram_weight_*` | In/Out | 32 | Weight SRAM |
+| `dut__tb__sram_result_*` | In/Out | 32 | Result SRAM |
+| `dut__tb__sram_scratchpad_*` | In/Out | 32 | Scratchpad SRAM |
+
+---
+
+## 📊 Synthesis Results (45 nm Library)
+
+| Metric | Value | Units | Notes |
+|:--|:--|:--|:--|
+| Logic Area | 12,508.9161 | µm² | Post-synthesis |
+| Clock Period | 10 | ns | Achieved target |
+| Total Cycles | 3,432 | cycles | Full attention pass |
+| Total Latency | 34,320 | ns | 10 ns × 3,432 |
+| Efficiency | 2.329 × 10⁻⁹ | ns⁻¹·µm⁻² | 1 / (Delay × Area) |
+
+---
+
+## 🧪 Verification Summary
+
+- **Simulator**: ModelSim (QuestaSim)  
+- **Testcases**: Positive (`inputs/`) and Negative (`negative_inputs/`)  
+- **Coverage**: All 15 FSM states hit  
+- **Golden reference**: Software model compares for Q, K, V, S, Z  
+- **Timing**: SRAM latency & RAW rules validated in waves
+
+---
+
+## 🧰 Build & Run
 
 ```bash
-make build-dw
+# Build and simulate
+cd run
 make build
-```
-
-All the .sv files in ```HW6/rtl/``` will be compiled with this command.
-
-### How to run your design
-
-Run with Modelsim UI 564:
-```bash
-make debug
-```
-
-### Evaluation Testing
-To evaluate you design headless/no-gui, change directory to ```HW6/run/```
-```
 make eval
-```
-This will produce a set of log files that will highlight the results of your design. This should only be ran as a final step before Synthesis
 
-All log files is in the following directory ```HW6/run/logs```
+# Negative tests
+make eval INPUT_DIR=../negative_inputs
 
-All test resutls is in the results log file ```HW6/run/logs/RESULTS.log```
+# Debug with GUI
+make debug
 
-All simulation resutls is in the following log file ```HW6/run/logs/output.log```
+# Cleanup
+make clean
 
-All simulation info is in the following log file ```HW6/run/logs/INFO.log```
-
-## Synthesis
-
-Once you have a functional design, you can synthesize it in ```HW6/synthesis/```
-
-### Synthesis Command
-The following command will synthesize your design with a default clock period of 10 ns
-```bash
-make all
-```
-### Clock Period
-
-To run synthesis with a different clock period
-```bash
-make all CLOCK_PER=<YOUR_CLOCK_PERIOD>
-```
-For example, the following command will set the target clock period to 4 ns.
-
-```bash
+# Optional synthesis (45 nm)
+cd ../synthesis
 make all CLOCK_PER=10
 ```
 
-## Appendix
+---
 
-### Directory Rundown
+## 📈 Results Summary
 
-You will find the following directories in ```HW6/```
+| Parameter | Value |
+|:--|:--|
+| Technology | 45 nm Synopsys Library |
+| Clock Period | 10 ns |
+| Latency | 34,320 ns |
+| Logic Area | 12,508.9 µm² |
+| FSM States | 15 |
+| Functional Status | ✅ All testcases passed |
 
-* ```inputs/``` 
-  * Contains the .dat files for the input SRAMs used in HW 
-* ```HW_specification/```
-  * Contains the HW specification document
-* ```rtl/```
-  * All .v files will be compiled when executing ```make vlog-v``` in ```HW6/run/```
-  * A template ```dut.v``` that interfaces with the test fixture is provided
-* ```run/```
-  * Contains the ```Makefile``` to compile and simulate the design
-* ```scripts/```
-  * Contains the python script that generates a random input/output
-* ```synthesis/```
-  * The directory you will use to synthesize your design
-  * Synthesis reports will be exported to ```synthesis/reports/```
-  * Synthesized netlist will be generated to ```synthesis/gl/```
-* ```testbench/```
-  * Contains the test fixture of the HW
+---
 
+## 🧩 Conclusion
+The **Transformer Scaled Dot-Product Attention Accelerator** implements Q/K/V, Score, and Output stages entirely in hardware with deterministic timing.  
+By colocating compute with scratchpad SRAM and reusing **Kᵀ** and **Vᵀ**, it achieves high throughput and energy efficiency — a practical building block for **NPU/AI subsystems** in modern SoCs.
 
+---
+
+## 📚 References
+- *ECE 564 – ASIC Design and Synthesis*, North Carolina State University  
+- Vaswani et al., “*Attention Is All You Need*,” NeurIPS 2017  
+- *Synopsys Design Compiler User Guide*  
+- *45 nm Standard Cell Library Documentation*
+
+---
+
+**Author:** Vishnuvardhan Chilukoti  
+**Course:** ECE 564 – ASIC Design and Synthesis, North Carolina State University  
+📫 **Contact:** [vchiluk3@gmail.com](mailto:vchiluk3@gmail.com)
