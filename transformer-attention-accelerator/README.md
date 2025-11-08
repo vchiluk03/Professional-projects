@@ -15,39 +15,31 @@ transformer-attention-accelerator/
 └── README.md
 ```
 
-## 🎯 Objective
-Design and synthesize a **dedicated ASIC accelerator** implementing the **Scaled Dot-Product Attention** mechanism. The goal is to translate software matrix operations into a **deterministic, area-efficient FSM** capable of:
-- Computing Q, K, V matrices  
-- Forming the Score matrix **S = Q × Kᵀ**  
-- Producing the final Attention output **Z = S × V**
+## Objective
+Design and synthesize a **dedicated ASIC accelerator** implementing the **Scaled Dot-Product Attention** mechanism. The goal is to translate software matrix operations into a **deterministic, area-efficient FSM** capable of computing Q, K, V matrices, forming the Score matrix **S = Q × Kᵀ**, and generating the final Attention output **Z = S × V**.
 
-## 📘 System Overview
-
+## System Overview
+The module accepts input and weight matrices, computes intermediate results (Q, K, V, S), and outputs the final attention vector (Z) through a deterministic FSM.
 **Attention(Q, K, V) = softmax((Q × Kᵀ) / √dₖ) × V**
 <p align="center">
   <img src="docs/attention_block_diagram.png" width="450"/>
 </p>
 <p align="center"><b>Figure 1 – Transformer Attention dataflow: Q, K, V → Score (QKᵀ) → Output (SV).</b></p>
 
-**Key operations implemented**
-1. **Q, K, V formation**  
-&nbsp;&nbsp;&nbsp;&nbsp;• Q = I × Wq  
-&nbsp;&nbsp;&nbsp;&nbsp;• K = I × Wk  
-&nbsp;&nbsp;&nbsp;&nbsp;• V = I × Wv  
-2. **Score matrix**: S = Q × Kᵀ  
-3. **Final output**: Z = S × V
+The accelerator performs all three matrix multiplications — Q/K/V formation, score computation, and final attention output — in hardware using a pipelined multiply-accumulate (MAC) datapath controlled by a finite state machine (FSM).
 
 ## Motivation — Why Dedicated Hardware?
 Transformer models have changed how modern AI understands language, speech, and vision. They allow computers to process entire sentences or images all at once, rather than step by step like older RNNs.  
 
-At the center of every Transformer is the attention mechanism, which decides how much “focus” to give to each word or token when generating meaning. This process involves thousands of matrix multiplications, resulting in heavy mathematical operations that must run repeatedly for every layer of the model. 
+At the center of every Transformer is the attention mechanism, which decides how much “focus” to give to each word or token when generating meaning. But this mechanism involves thousands of matrix multiplications, repeated across many layers, consuming high energy and memory bandwidth on CPUs and GPUs.
 
-Running these computations on general-purpose CPUs or GPUs is fast, but still consumes a lot of energy and memory bandwidth. For small embedded devices or real-time applications (like voice assistants, translation chips, or on-device generative AI), that level of compute is inefficient and too slow.  
+While general-purpose processors can execute these operations, their frequent data movement between compute and memory limits efficiency.
+For embedded or real-time applications like voice assistants, mobile AI chips, or low-power inference, this approach is too heavy.
 
-This project was designed to solve that problem. It builds a **dedicated hardware accelerator**, a focused piece of logic that performs the attention math directly in silicon. Instead of relying on large processors, this accelerator performs **Attention(Q, K, V) = softmax((Q × Kᵀ) / √dk) × V** using a tightly controlled FSM and local SRAMs. The result is a faster, energy-efficient, and predictable hardware unit that can be integrated into a real SoC to power Transformer-based workloads.
+To address this challenge, the design introduces a dedicated hardware accelerator that performs **Attention(Q, K, V) = softmax((Q × Kᵀ) / √dₖ) × V** directly in silicon using a tightly controlled FSM and local SRAMs. This yields a faster, energy-efficient, and predictable hardware unit that can be integrated into real SoCs to power Transformer-based workloads.
 
-**Want to see an intuitive real-world example?**  
-Check out the [Example: Why This Design Matters in Real SoCs](docs/attention_accelerator_example.md)
+**Want to see a real-world example?** 
+[Example: Why This Design Matters in Real SoCs](docs/attention_accelerator_example.md)
 
 ## Where It Fits Inside a Real SoC
 <p align="center">
@@ -55,7 +47,7 @@ Check out the [Example: Why This Design Matters in Real SoCs](docs/attention_acc
 </p>
 <p align="center"><b>Figure 2 – Typical SoC placement: Attention Accelerator IP inside an NPU/AI subsystem.</b></p>
 
-In a full System-on-Chip (SoC), this accelerator would be part of the **AI or NPU subsystem**. The host CPU sends control signals through a memory-mapped interface (AXI or Wishbone) and loads the input/weight matrices into on-chip SRAM. Once computation begins, the accelerator handles all the Q, K, V, S, and Z computations internally. When done, it signals completion to the CPU (using `dut_ready` or an interrupt).  
+In a System-on-Chip (SoC), this accelerator operates as part of the **AI or NPU subsystem**. The CPU initializes data and configuration through a memory-mapped interface (AXI/Wishbone) and loads the input and weight matrices into on-chip SRAM. Once triggered, the accelerator autonomously computes all Q, K, V, S, and Z matrices and signals completion via `dut_ready` or an interrupt. 
 
 This type of block is typically used in:
 - **Edge AI processors** – smartphones, IoT, automotive SoCs  
@@ -77,7 +69,7 @@ Each state controls:
 - `multiply_accum` for MAC operations  
 - `dut_ready` / `dut_valid` handshake
 
-## Handshake Protocol
+## Handshake and Timing
 <p align="center">
   <img src="docs/dut_handshake_timing.png" width="700"/>
 </p>
@@ -92,19 +84,19 @@ Each state controls:
 | `dut__tb__sram_*` | In/Out | 4× SRAM interfaces (Input, Weight, Result, Scratchpad) |
 **Protocol behavior**  
 1️. After reset: `dut_ready = 1` (IDLE)  
-2️. Testbench asserts `dut_valid` → FSM starts; `dut_ready = 0`  
-3️. On completion: `dut_ready = 1` again
+2️. Testbench asserts `dut_valid` → FSM begins computation(`dut_ready = 0`)  
+3️. On completion: FSM sets `dut_ready = 1` again
 
-## SRAM Architecture & Timing
+## SRAM Architecture and Access
 <p align="center">
   <img src="docs/sram_interface_ports.png" width="700"/>
 </p>
-<p align="center"><b>Figure 4 – Four SRAM interfaces mapped to Input, Weight, Result, Scratchpad.</b></p>
+<p align="center"><b>Figure 4 – Four SRAM interfaces used for Input, Weight, Result, and Scratchpad.</b></p>
 
-- **Input SRAM**: Stores input embeddings (I) + dimensions  
-- **Weight SRAM**: Stores Wq, Wk, Wv tiles  
-- **Result SRAM**: Holds Q, K, V, S, Z matrices sequentially  
-- **Scratchpad SRAM**: Holds **Kᵀ** and **transposed V** for reuse  
+- **Input SRAM**: stores input embeddings (I) and matrix dimensions  
+- **Weight SRAM**: holds Wq, Wk, and Wv tiles
+- **Result SRAM**: stores Q, K, V, S, Z results sequentially  
+- **Scratchpad SRAM**: holds transposed matrices **(Kᵀ, Vᵀ)** for reuse 
 
 <p align="center">
   <img src="docs/sram_timing_diagram.png" width="780"/>
@@ -118,10 +110,11 @@ Each state controls:
 - Read/write phases separated to guarantee correctness
 
 ## RTL Highlights (rtl/dut.sv)
-- **MAC pipeline**: `multiply_accum` accumulates partial products per output element  
-- **Transposed V optimization**: store V column-major in scratchpad for fast **Z = S × V**  
-- **SystemVerilog features**: `typedef enum logic [3:0]` states, `logic` typing for clean synthesis  
-- **Handshake**: `dut_valid` to start; `dut_ready` asserted when all outputs are committed to SRAM
+- **MAC datapath**: Performs multiply-accumulate per element using `multiply_accum`
+- **Transposed V optimization**: V written column-wise in Scratchpad for `Z = S × V`
+- **FSM structure**: `typedef enum logic [3:0]` ensures clean, synthesizable control
+- **Handshake**: `dut_valid` starts computation and `dut_ready` asserted when all outputs are committed to SRAM
+- **Local counters**: `A_row_counter`, `B_column_counter`, `element_counter` manage matrix traversal
 **Representative snippet**
 ```verilog
 always @(posedge clk or negedge reset_n) begin
@@ -152,14 +145,14 @@ end
 | Total Cycles | 3,432 | cycles | Full attention pass |
 | Total Latency | 34,320 | ns | 10 ns × 3,432 |
 | Efficiency | 2.329 × 10⁻⁹ | ns⁻¹·µm⁻² | 1 / (Delay × Area) |
+The design was synthesized using the **Nangate 45 nm Open Cell Library (PDK v1.2)** in **Synopsys Design Compiler (T-2022.03-SP4)**. This open-source 45 nm technology provides realistic area and timing analysis, balancing performance and power without using any proprietary PDKs.
 
 ## Verification Summary
-
 - **Simulator**: ModelSim (QuestaSim)  
 - **Testcases**: Positive (`inputs/`) and Negative (`negative_inputs/`)  
 - **Coverage**: All 15 FSM states hit  
 - **Golden reference**: Software model compares for Q, K, V, S, Z  
-- **Timing**: SRAM latency & RAW rules validated in waves
+- **Timing**: SRAM latency & RAW rules validated in waveforms
 
 ## Build & Run
 ```bash
@@ -185,27 +178,27 @@ make all CLOCK_PER=10
 ## Results Summary
 | Parameter | Value |
 |:--|:--|
-| Technology | 45 nm Synopsys Library |
+| Technology | Nangate 45 nm Open Cell Library (PDK v1.2) |
+| Synthesis Tool | Synopsys Design Compiler (T-2022.03-SP4) |
 | Clock Period | 10 ns |
 | Latency | 34,320 ns |
 | Logic Area | 12,508.9 µm² |
 | FSM States | 15 |
 | Functional Status | All testcases passed |
 
+---
+
 ## Conclusion
-The **Transformer Scaled Dot-Product Attention Accelerator** implements Q/K/V, Score, and Output stages entirely in hardware with deterministic timing.  
-By colocating compute with scratchpad SRAM and reusing **Kᵀ** and **Vᵀ**, it achieves high throughput and energy efficiency — a practical building block for **NPU/AI subsystems** in modern SoCs.
+The **Transformer Scaled Dot-Product** Attention Accelerator implements Q/K/V, Score, and Output computations fully in hardware, achieving deterministic timing and low energy. By placing computation close to memory and reusing transposed matrices (Kᵀ, Vᵀ), it provides a high-throughput, low-power hardware foundation for **Transformer-based SoC accelerators** in modern AI and NLP applications.
 
 ---
 
 ## References
-- *ECE 564 – ASIC Design and Synthesis*, North Carolina State University  
+- *ECE 564 – ASIC and FPGA Design using Verilog*, North Carolina State University  
 - Vaswani et al., “*Attention Is All You Need*,” NeurIPS 2017  
-- *Synopsys Design Compiler User Guide*  
-- *45 nm Standard Cell Library Documentation*
 
 ---
 
 **Author:** Vishnuvardhan Chilukoti  
-**Course:** ECE 564 – ASIC Design and Synthesis, North Carolina State University  
+**Course:** ECE 564 – ASIC and FPGA Design using Verilog, North Carolina State University  
 **Contact:** [vchiluk3@gmail.com](mailto:vchiluk3@gmail.com)
