@@ -62,9 +62,9 @@ This accelerator becomes a **key building block** for Transformer-based workload
 ---
 
 ## Summary
-Transformers are massive relational calculators. This design implements a **small, specialized hardware calculator** that performs only the attention math — precisely, efficiently, and at hardware speed.
+Transformers are massive relational calculators. This design implements a **small, specialized hardware calculator** that performs only the attention math precisely, efficiently, and at hardware speed.
 
-That’s why dedicated attention accelerators are now key components of **modern AI SoCs**, enabling low-power, high-performance inference for edge and embedded applications.
+Dedicated attention accelerators have become essential components of **modern AI SoCs**, enabling low-power and high-performance inference for edge and embedded applications.
 
 ---
 **Author:** Vishnuvardhan Chilukoti  

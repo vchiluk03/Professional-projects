@@ -1,17 +1,18 @@
 # Transformer Scaled Dot-Product Attention Accelerator (ASIC Design)
-This project presents the **design and synthesis of a Scaled Dot-Product Attention Accelerator**, the mathematical heart of the Transformer architecture used in modern NLP and AI systems. Developed as part of **ECE 564 – ASIC & FPGA Design using Verilog** at **North Carolina State University**, this design realizes the full attention pipeline in **Verilog/SystemVerilog** with a 15-state FSM, four SRAMs, and a pipelined multiply-accumulate datapath.
+This project presents the **RTL design and synthesis of a Scaled Dot-Product Attention Accelerator**, the mathematical heart of the Transformer architecture used in modern NLP and AI systems. Developed as part of **ECE 564 – ASIC & FPGA Design using Verilog** at **North Carolina State University**, this design realizes the full attention pipeline in **Verilog/SystemVerilog** with a 15-state FSM, four SRAMs, and a pipelined multiply-accumulate datapath.
 
 ## Repository Structure
 ```bash
 transformer-attention-accelerator/
-├── rtl/                 # Synthesizable Verilog RTL (MyDesign.sv)
-├── testbench/           # SystemVerilog testbench, SRAM models
-├── run/                 # Makefile, waveform setup, logs
-├── synthesis/           # DC synthesis scripts and reports
-├── inputs/              # Positive testcases
-├── negative_inputs/     # Negative testcases
-├── docs/                # Figures and example explanation
-│   └── attention_accelerator_example.md   # Linked example document
+├── docs/                 # DUT Spec.,Figures and example explanation
+├── inputs/               # Positive testcases (.dat produced by scripts/)
+├── negative_inputs/      # Negative testcases
+├── rtl/                  # Synthesizable Verilog RTL (dut.sv)
+├── run/                  # Makefile, waveform setup
+├── scripts/              # Python data generators
+├── synthesis/            # DC synthesis scripts and reports
+├── testbench/            # SystemVerilog testbench, SRAM models
+├── setup.sh              
 └── README.md
 ```
 
@@ -20,21 +21,21 @@ Design and synthesize a **dedicated ASIC accelerator** implementing the **Scaled
 
 ## System Overview
 The module accepts input and weight matrices, computes intermediate results (Q, K, V, S), and outputs the final attention vector (Z) through a deterministic FSM.
+
 **Attention(Q, K, V) = softmax((Q × Kᵀ) / √dₖ) × V**
 <p align="center">
   <img src="docs/attention_block_diagram.png" width="450"/>
 </p>
 <p align="center"><b>Figure 1 – Transformer Attention dataflow: Q, K, V → Score (QKᵀ) → Output (SV).</b></p>
 
-The accelerator performs all three matrix multiplications — Q/K/V formation, score computation, and final attention output — in hardware using a pipelined multiply-accumulate (MAC) datapath controlled by a finite state machine (FSM).
+The accelerator performs all three matrix multiplications, including Q, K, and V formation, score computation, and the final attention output, in hardware using a pipelined multiply-accumulate (MAC) datapath that is controlled by a finite state machine (FSM).
 
-## Motivation — Why Dedicated Hardware?
+## Motivation - Why Dedicated Hardware?
 Transformer models have changed how modern AI understands language, speech, and vision. They allow computers to process entire sentences or images all at once, rather than step by step like older RNNs.  
 
 At the center of every Transformer is the attention mechanism, which decides how much “focus” to give to each word or token when generating meaning. But this mechanism involves thousands of matrix multiplications, repeated across many layers, consuming high energy and memory bandwidth on CPUs and GPUs.
 
-While general-purpose processors can execute these operations, their frequent data movement between compute and memory limits efficiency.
-For embedded or real-time applications like voice assistants, mobile AI chips, or low-power inference, this approach is too heavy.
+While general-purpose processors can execute these operations, their frequent data movement between compute and memory limits efficiency. For embedded or real-time applications like voice assistants, mobile AI chips, or low-power inference, this approach is too heavy.
 
 To address this challenge, the design introduces a dedicated hardware accelerator that performs **Attention(Q, K, V) = softmax((Q × Kᵀ) / √dₖ) × V** directly in silicon using a tightly controlled FSM and local SRAMs. This yields a faster, energy-efficient, and predictable hardware unit that can be integrated into real SoCs to power Transformer-based workloads.
 
