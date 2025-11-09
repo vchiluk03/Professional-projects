@@ -46,7 +46,7 @@ This transformation removes WAR/WAW hazards and increases ILP by allowing indepe
 # Architecture
 <p align="center">
   <img src="./assets/ooo-architecture.png" width="700"><br>
-  <em>Figure 1 – Out-of-Order Superscalar Pipeline showing all stages, Rename Map Table (RMT), Issue Queue (IQ), and Reorder Buffer (ROB).</em>
+  <em>Figure 2 – Out-of-Order Superscalar Pipeline showing all stages, Rename Map Table (RMT), Issue Queue (IQ), and Reorder Buffer (ROB).</em>
 </p>
 
 Each pipeline stage processes up to WIDTH instructions per cycle, except Writeback, which is unbounded.
