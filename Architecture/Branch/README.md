@@ -1,5 +1,5 @@
 # Branch Predictor Simulator – Bimodal, Gshare & Hybrid
-This repository documents my implementation of a **dynamic branch prediction simulator** written in **C++**, developed as part of **ECE 563 – Computer Architecture (Prof. Eric Rotenberg, North Carolina State University)**.  
+This repository documents my implementation of a **dynamic branch prediction simulator** written in **C++**, developed as part of **ECE 563 – Microprocessor Architecture (Prof. Eric Rotenberg, North Carolina State University)**.  
 
 The simulator models and compares three key dynamic branch predictors (**Bimodal**, **Gshare**, and **Hybrid**) to analyze control flow accuracy, prediction efficiency, and design trade-offs in a single-core CPU pipeline.
 
@@ -25,10 +25,29 @@ branch-predictor-sim/
 ```
 
 # Architecture
-<p align="center">
-  <img src="./assets/predictor-architecture.png" width="600"><br>
-  <em>Figure 1: Bimodal, Gshare, and Hybrid Predictor Overview</em>
-</p>
+<p align="center"><em>Figure 1 – Bimodal, Gshare, and Hybrid Predictor Architecture</em></p>
+
+```bash
+                   +-------------------+
+                   |     PC bits       |
+                   +-------------------+
+                              |
+          +-------------------+-------------------+
+          |                                       |
+  +---------------+                       +---------------+
+  |   Bimodal     |                       |    Gshare     |
+  |  Table (2^M2) |                       |  Table (2^M1) |
+  +---------------+                       +---------------+
+          |                                       |
+          +-------------------+-------------------+
+                              |
+                      +---------------+
+                      |   Chooser     |
+                      |   Table (2^K) |
+                      +---------------+
+                              |
+                        Final Prediction
+```
 
 ### 1. Bimodal Predictor
 - Indexed by low-order *m* bits of the PC (excluding 2 LSBs).  
@@ -130,14 +149,14 @@ FINAL CONTENTS OF CHOOSER TABLE:
 | jpeg      | 13     | 7.59 %      |
 | perl      | 14     | 8.82 %      |
 
->Table growth beyond m≈18 yields diminishing returns and each branch gets its own counter.
+> Table growth beyond m≈18 yields diminishing returns and each branch gets its own counter.
 
 ### Gshare Predictor Analysis
 - Explored 7 ≤ m ≤ 20 and 0 ≤ n ≤ m on `gcc`.
-- Optimal balance at m = 20, n = 11 → 6.37 % misprediction.
+- Optimal balance at m = 20, n = 11 yields 6.37 % misprediction.
 - Baseline (bimodal n = 0) ≈ 11.17 %.
 
->History helps when table is large and hurts when table is small.
+> History helps when table is large and hurts when table is small.
 
 ### Hybrid Predictor Analysis
 - Combines bimodal and gshare via chooser training.
@@ -152,7 +171,7 @@ FINAL CONTENTS OF CHOOSER TABLE:
 | Gshare    | Correlates global history | ≈ 40 % fewer mispredictions |
 | Hybrid    | Adaptive selection        | Best overall accuracy       |
 
->Dynamic hybrid selection reduces mispredictions by ≈ 45 % over bimodal baseline on `gcc`.
+> Dynamic hybrid selection reduces mispredictions by ≈ 45 % over bimodal baseline on `gcc`.
 
 ## Full Report
 [View Full Report (PDF)](./report/report.pdf)
