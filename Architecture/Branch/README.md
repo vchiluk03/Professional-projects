@@ -17,6 +17,7 @@ Modern processors rely on branch prediction to maintain instruction-level parall
 branch-predictor-sim/
 ├── src/                    # C++ sources: bimodal, gshare, hybrid, simulator main
 ├── traces/                 # Input benchmark traces (gcc, jpeg, perl)
+├── ref_validation_runs/    # Sample Gradescope validation outputs
 ├── report/
 │   └── report.pdf          # Detailed project report with graphs & discussion
 ├── Makefile                # Builds simulator → ./sim
