@@ -27,9 +27,7 @@ branch-predictor-sim/
 # Architecture
 <p align="center"><em>Figure 1 – Bimodal, Gshare, and Hybrid Predictor Architecture</em></p>
 
-<div align="center">
-<pre>
-
+```bash
                    +-------------------+
                    |     PC bits       |
                    +-------------------+
@@ -49,9 +47,7 @@ branch-predictor-sim/
                       +---------------+
                               |
                         Final Prediction
-
-</pre>
-</div>
+```
 
 ### 1. Bimodal Predictor
 - Indexed by low-order *m* bits of the PC (excluding 2 LSBs).  
