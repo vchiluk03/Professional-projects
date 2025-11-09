@@ -1,28 +1,38 @@
-# Cache and Memory Hierarchy Simulator - L1/L2 with Stream Buffer Prefetching
-This repository documents my implementation of a **configurable cache and memory hierarchy simulator** written in **C++**, developed as part of **ECE 563 - Microprocessor Architecture (Prof. Eric Rotenberg, NC State University)**.  
+# Out-of-Order Superscalar Processor Simulator
+This repository documents my implementation of a **dynamic superscalar out-of-order processor simulator** written in **C++**, developed as part of **ECE 563 – Microprocessor Architecture (Prof. Eric Rotenberg, North Carolina State University)**.  
 
-The project models realistic **two-level cache hierarchies** (L1 and L2) and integrates a **Stream-Buffer-based Prefetcher** to explore performance, area, and energy trade-offs.
+The simulator models a **multi-issue, dynamically scheduled CPU pipeline**, incorporating instruction-level parallelism through **register renaming**, **issue queue scheduling**, and **a reorder buffer (ROB)** for in-order retirement.
+
+---
 
 ## Overview
-Modern processors depend on multi-level cache hierarchies to bridge the performance gap between CPU and main memory. This simulator emulates that hierarchy, allowing configurable exploration of:
-- **Cache parameters:** size, associativity, block size  
-- **Policies:** Write-Back + Write-Allocate (WBWA), LRU replacement  
-- **Prefetching:** Stream Buffer Prefetcher (N buffers × M blocks)  
-- **Metrics:** miss rates, writebacks, prefetches, total memory traffic, and AAT (Average Access Time)
+This simulator focuses on **dynamic instruction scheduling**, assuming:
+- **Perfect branch prediction** → no recovery from misprediction.  
+- **Perfect instruction and data caches** → no stalls when fetching instructions or accessing data.  
 
-All configurations and results were validated using **Gradescope autograder outputs** and benchmark traces (`gcc_trace.txt`, `stream_trace.txt`).
+Hence, the core emphasis is on **modeling the dynamic scheduling logic** and capturing pipeline timing behavior in an out-of-order (OOO) superscalar CPU.
+
+It implements:
+- Register renaming (eliminating WAR/WAW hazards)  
+- Reorder Buffer for precise in-order retirement  
+- Issue Queue scheduling based on operand readiness  
+- Multiple functional units (FUs) with realistic execution latency  
+- Fully pipelined stages, with configurable window and width parameters  
+- Detailed per-instruction and per-stage timing output  
+
+---
 
 ## Repository Structure
 ```bash
-cache-hierarchy-sim/
-├── src/                    # C++ source: cache, hierarchy, stream buffer
-├── traces/                 # Memory access traces (SPEC / microbenchmarks)
+ooo-superscalar-sim/
+├── src/                     # C++ sources: pipeline stages, ROB, IQ, rename table, simulation loop
+├── traces/                  # Input traces (PC, op_type, src/dst registers)
 ├── report/
-│   └── report.pdf          # Full project report with graphs and answers
-├── ref_validation_runs/    # Sample Gradescope validation outputs
-├── Makefile                # Builds simulator → ./sim
+│   └── report.pdf           # Full project report with analysis & results
+├── ref_validation_runs/     # Gradescope validation reference outputs
+├── Makefile                 # Builds simulator → ./sim
 └── README.md
-```
+
 
 ## Architecture
 <p align="center">
