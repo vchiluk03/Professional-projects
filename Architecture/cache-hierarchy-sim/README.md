@@ -113,11 +113,7 @@ The simulator prints results following Gradescope’s format:
 ## Performance Equations
 *Note:* Hit times and energy numbers are obtained from **CACTI 7.0** simulations for various cache configurations.
 ### Average Access Time (AAT)
-```bash
-\[
-AAT = HT_{L1} + MR_{L1} \times (HT_{L2} + MR_{L2} \times MP)
-\]
-```
+**AAT = HT<sub>L1</sub> + MR<sub>L1</sub> × (HT<sub>L2</sub> + MR<sub>L2</sub> × MP)**
 where  
 - **HT** – Hit Time (from CACTI)  
 - **MR** – Miss Rate (from simulator)  
