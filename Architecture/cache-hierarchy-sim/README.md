@@ -1,5 +1,5 @@
 # Cache and Memory Hierarchy Simulator - L1/L2 with Stream Buffer Prefetching
-This repository documents my implementation of a **configurable cache and memory hierarchy simulator** written in **C++**, developed as part of **ECE 563 - Computer Architecture (Prof. Eric Rotenberg, NC State University)**.  
+This repository documents my implementation of a **configurable cache and memory hierarchy simulator** written in **C++**, developed as part of **ECE 563 - Microprocessor Architecture (Prof. Eric Rotenberg, NC State University)**.  
 
 The project models realistic **two-level cache hierarchies** (L1 and L2) and integrates a **Stream-Buffer-based Prefetcher** to explore performance, area, and energy trade-offs.
 
@@ -113,9 +113,11 @@ The simulator prints results following Gradescope’s format:
 ## Performance Equations
 *Note:* Hit times and energy numbers are obtained from **CACTI 7.0** simulations for various cache configurations.
 ### Average Access Time (AAT)
+```bash
 \[
 AAT = HT_{L1} + MR_{L1} \times (HT_{L2} + MR_{L2} \times MP)
 \]
+```
 where  
 - **HT** – Hit Time (from CACTI)  
 - **MR** – Miss Rate (from simulator)  
@@ -162,7 +164,7 @@ Detailed numerical results and plots are available in the project report.
 ---
 
 ## References
-- ECE 563 – Computer Architecture, North Carolina State University
+- ECE 563 – Microprocessor Architecture, North Carolina State University
 - Jouppi N., “Improving Direct-Mapped Cache Performance by the Addition of a Small Fully Associative Cache and Prefetch Buffers,” ISCA 1990
 - CACTI Tool Documentation – HP Labs
 
