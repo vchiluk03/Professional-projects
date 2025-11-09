@@ -123,6 +123,7 @@ FINAL CONTENTS OF CHOOSER TABLE:
 ### Bimodal Predictor Analysis
 - Simulated 7 ≤ m ≤ 20 on `gcc`, `jpeg`, `perl`.
 - Misprediction rate drops with larger tables and stabilizes beyond m≈18
+
 | Benchmark | Best m | Lowest Rate |
 | :-------- | :----- | :---------- |
 | gcc       | 18     | 11.17 %     |
