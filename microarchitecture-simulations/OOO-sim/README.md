@@ -1,15 +1,10 @@
 # Out-of-Order Superscalar Processor Simulator
 This repository documents my implementation of a **cycle-accurate Out-of-Order (OOO) Superscalar Processor Simulator** written in **C++**, developed as part of **ECE 563 – Microprocessor Architecture (Prof. Eric Rotenberg, North Carolina State University)**.
 
-The simulator models the **core microarchitecture** of a modern superscalar processor with **dynamic scheduling**, **register renaming**, and **in-order retirement**.  
-It supports configurable **pipeline width (WIDTH)**, **Reorder Buffer size (ROB_SIZE)**, and **Issue Queue size (IQ_SIZE)** for exploring instruction-level parallelism (ILP).
-
----
+The simulator models the **core microarchitecture** of a modern superscalar processor with **dynamic scheduling**, **register renaming**, and **in-order retirement**. It supports configurable **pipeline width (WIDTH)**, **Reorder Buffer size (ROB_SIZE)**, and **Issue Queue size (IQ_SIZE)** for exploring instruction-level parallelism (ILP).
 
 ## Overview
-Modern high-performance CPUs execute multiple instructions per cycle using out-of-order techniques.  
-This simulator captures those key concepts by implementing:
-
+Modern high-performance CPUs execute multiple instructions per cycle using out-of-order techniques. This simulator captures those key concepts by implementing:
 - **Dynamic scheduling** with *register renaming* and *data dependency tracking*  
 - **Superscalar issue** — up to `WIDTH` instructions can enter the pipeline per cycle  
 - **Reorder Buffer (ROB)** ensuring in-order commitment and precise exceptions  
@@ -18,10 +13,7 @@ This simulator captures those key concepts by implementing:
 - **Perfect memory and branch assumptions:**  
   - Perfect **branch prediction** → no misprediction recovery  
   - Perfect **cache hierarchy** → no memory stalls  
-
 Together, these enable analysis of instruction throughput under *idealized core conditions*.
-
----
 
 ## Repository Structure
 ```bash
@@ -48,22 +40,21 @@ This transformation removes WAR/WAW hazards and increases ILP by allowing indepe
   <img src="./assets/ooo-architecture.png" width="700"><br>
   <em>Figure 2 – Out-of-Order Superscalar Pipeline showing all stages, Rename Map Table (RMT), Issue Queue (IQ), and Reorder Buffer (ROB).</em>
 </p>
+Each pipeline stage processes up to WIDTH instructions per cycle, except Writeback, which is unbounded. Key hardware structures modeled in the simulator:
 
-Each pipeline stage processes up to WIDTH instructions per cycle, except Writeback, which is unbounded.
-Key hardware structures modeled in the simulator:
-| Component                             | Description                                                                                                      |
-| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| **Rename Map Table (RMT)**            | Tracks speculative mappings from logical to physical registers (ROB entries). Eliminates WAR/WAW hazards.        |
-| **Reorder Buffer (ROB)**              | Maintains instruction state until retirement; commits results in-order to the Architectural Register File (ARF). |
-| **Issue Queue (IQ)**                  | Holds ready and waiting instructions; performs wakeup and select each cycle.                                     |
-| **Architectural Register File (ARF)** | Stores committed register values; updated only at retirement.                                                    |
-| **Functional Units (FUs)**            | Model execution latency of different operations (simple ALU, complex ALU, MEM).                                  |
+| Component | Description |
+|------------|-------------|
+| **Rename Map Table (RMT)** | Tracks speculative mappings from logical to physical registers (ROB entries). Eliminates WAR/WAW hazards. |
+| **Reorder Buffer (ROB)** | Maintains instruction state until retirement and commits results in-order to the Architectural Register File (ARF). |
+| **Issue Queue (IQ)** | Holds ready and waiting instructions and performs wakeup and select each cycle. |
+| **Architectural Register File (ARF)** | Stores committed register values and is updated only at retirement. |
+| **Functional Units (FUs)** | Model execution latency of different operations (simple ALU, complex ALU, MEM). |
 
 ## Pipeline Stages
-1. Fetch – Fetch up to WIDTH instructions from the trace per cycle.
-2. Decode – Parse instruction fields (op_type, dst, src1, src2).
+1. Fetch – Fetch up to `WIDTH` instructions from the trace per cycle.
+2. Decode – Parse instruction fields (`op_type`, `dst`, `src1`, `src2`).
 3. Rename – Map logical registers to ROB entries via the Rename Map Table.
-4. Register Read – Check operand readiness; read or wait for producer tags.
+4. Register Read – Check operand readiness and read or wait for producer tags.
 5. Dispatch – Insert renamed instructions into the Issue Queue (in-order).
 6. Issue – Select ready instructions (out-of-order) and send to execution units.
 7. Execute – Simulate latency for each operation type.
@@ -120,8 +111,8 @@ Example:
 | Argument     | Description                                     |
 | ------------ | ----------------------------------------------- |
 | `WIDTH`      | Superscalar width (instructions per cycle)      |
-| `ROB_SIZE`   | Entries in the Reorder Buffer                   |
-| `IQ_SIZE`    | Entries in the Issue Queue                      |
+| `ROB_SIZE`   | Number of entries in the Reorder Buffer         |
+| `IQ_SIZE`    | Number of entries in the Issue Queue            |
 | `trace_file` | Input instruction trace (e.g., `gcc_trace.txt`) |
 
 ## Design Assumptions
@@ -130,7 +121,7 @@ Example:
 - Unlimited Writeback bandwidth.
 - All functional units are pipelined and operate concurrently.
 - Single clocked simulation loop: fetch → retire each cycle.
-- These assumptions isolate core out-of-order behavior to study scheduling, dependency resolution, and ILP limits.
+These assumptions isolate the core out-of-order behavior to study scheduling, dependency resolution, and ILP limits.
 
 ## Tools and Environment
 - Language: C++ (C++11)
