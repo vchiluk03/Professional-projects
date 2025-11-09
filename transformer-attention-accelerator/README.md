@@ -197,7 +197,7 @@ The **Transformer Scaled Dot-Product** Attention Accelerator implements Q/K/V, S
 
 ## References
 - *ECE 564 – ASIC and FPGA Design using Verilog*, North Carolina State University  
-- Vaswani et al., “*Attention Is All You Need*,” NeurIPS 2017  
+- Vaswani et al., “*Attention Is All You Need*,” [NeurIPS 2017 Paper (PDF)](docs/NIPS-2017-attention-is-all-you-need-Paper.pdf)
 
 ---
 
