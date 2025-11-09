@@ -176,21 +176,12 @@ FINAL CONTENTS OF CHOOSER TABLE:
 ## Full Report
 [View Full Report (PDF)](./report/report.pdf)
 
-## Tools and Environment
-- Language: C++ (C++11)
-- Platform: Linux / ETX Cluster
-- Build System: Makefile
-- Validation: Gradescope Autograder
-- Benchmarks: gcc, jpeg, perl
-- Analysis: Python & Excel for graphs
-
 ---
+**Tools and Environment:**  
+C++ (C++11), Linux / ETX Cluster, Makefile, Gradescope Autograder  
+Benchmarks: gcc, jpeg, perl  
+Analysis: Python & Excel for graphs  
 
-## References
-- ECE 563 – Microprocessor Architecture, North Carolina State University
-
----
 **Author:** Vishnuvardhan Chilukoti  
-**Course:** ECE 563 – Microprocessor Architecture, North Carolina State University  
-**Email:** vchiluk3@gmail.com
+
 

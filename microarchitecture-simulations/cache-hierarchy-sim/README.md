@@ -149,23 +149,11 @@ Detailed numerical results and plots are available in the project report.
 ## Full Report
 [View Full Report (PDF)](./report/report.pdf)
 
-## Tools and Environment
-- Language: C++ (C++11)
-- Platform: Linux / ETX Cluster
-- Build System: Makefile
-- Validation: Gradescope Autograder
-- Traces: SPEC 2006 / 2017, custom microbenchmarks
-- Analysis: CACTI tool for area and energy estimation
-
 ---
+**Tools and Environment:**  
+C++ (C++11), Linux / ETX Cluster, Makefile, Gradescope Autograder  
+Traces: SPEC 2006 / 2017, custom microbenchmarks  
+Analysis: CACTI tool for area and energy estimation
 
-## References
-- ECE 563 – Microprocessor Architecture, North Carolina State University
-- Jouppi N., “Improving Direct-Mapped Cache Performance by the Addition of a Small Fully Associative Cache and Prefetch Buffers,” ISCA 1990
-- CACTI Tool Documentation – HP Labs
-
----
-**Author:** Vishnuvardhan Chilukoti  
-**Course:** ECE 563 – Microprocessor Architecture, North Carolina State University  
-**Email:** vchiluk3@gmail.com
+**Author:** Vishnuvardhan Chilukoti 
 

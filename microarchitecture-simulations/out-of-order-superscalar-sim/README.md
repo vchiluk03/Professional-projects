@@ -127,21 +127,12 @@ Example:
 - Single clocked simulation loop: fetch → retire each cycle.
 These assumptions isolate the core out-of-order behavior to study scheduling, dependency resolution, and ILP limits.
 
-## Tools and Environment
-- Language: C++ (C++11)
-- Platform: Linux / ETX Cluster
-- Build System: Makefile
-- Validation: Gradescope Autograder
-- Traces: gcc, perl
-
 ---
+**Tools and Environment:**  
+C++ (C++11), Linux / ETX Cluster, Makefile, Gradescope Autograder  
+Traces: gcc, perl  
+ 
 
-## References
-- ECE 563 – Microprocessor Architecture, North Carolina State University.
-- John Hennessy & David Patterson, Computer Architecture: A Quantitative Approach.
-
----
 **Author:** Vishnuvardhan Chilukoti  
-**Course:** ECE 563 – Microprocessor Architecture, North Carolina State University  
-**Email:** vchiluk3@gmail.com
+
 
