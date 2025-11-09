@@ -3,8 +3,6 @@ This repository documents my implementation of a **dynamic superscalar out-of-or
 
 The simulator models a **multi-issue, dynamically scheduled CPU pipeline**, incorporating instruction-level parallelism through **register renaming**, **issue queue scheduling**, and **a reorder buffer (ROB)** for in-order retirement.
 
----
-
 ## Overview
 This simulator focuses on **dynamic instruction scheduling**, assuming:
 - **Perfect branch prediction** → no recovery from misprediction.  
@@ -20,25 +18,54 @@ It implements:
 - Fully pipelined stages, with configurable window and width parameters  
 - Detailed per-instruction and per-stage timing output  
 
----
-
 ## Repository Structure
 ```bash
 ooo-superscalar-sim/
-├── src/                     # C++ sources: pipeline stages, ROB, IQ, rename table, simulation loop
+├── src/                     # C++ source and header files
 ├── traces/                  # Input traces (PC, op_type, src/dst registers)
-├── report/
-│   └── report.pdf           # Full project report with analysis & results
 ├── ref_validation_runs/     # Gradescope validation reference outputs
 ├── Makefile                 # Builds simulator → ./sim
 └── README.md
-
+```
 
 ## Architecture
-<p align="center">
-  <img src="./assets/architecture-diagram.png" width="600"><br>
-  <em>Figure 1: Cache and Memory Hierarchy Overview</em>
-</p>
+<p align="center"><em>Figure 1 – Superscalar Out-of-Order Pipeline Architecture</em></p> <div align="center"> <pre>
+
++----------------+ +------------+ +------------+ +-------------+
+| FETCH | -> | DECODE | -> | RENAME | -> | REG-READ |
++----------------+ +------------+ +------------+ +-------------+
+|
+v
++-----------+
+| DISPATCH |
++-----------+
+|
++--------+--------+
+| |
++-----------+ +-----------+
+| ISSUE Q | --> | EXECUTE |
+| (ready?) | | (FUs w/ |
+| | | latency) |
++-----------+ +-----------+
+| |
++--------+--------+
+|
++-----------+
+| WRITEBACK |
++-----------+
+|
++-----------+
+| RETIRE |
+| (in order)|
++-----------+
+|
++-----------+
+| ROB |
+| (status, |
+| result) |
++-----------+
+
+</pre> </div>
 
 ### Cache Module (`CACHE`)
 A generic cache model that can be used as L1, L2, or any other level:
