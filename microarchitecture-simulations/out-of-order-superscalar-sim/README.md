@@ -15,8 +15,6 @@ Modern high-performance CPUs execute multiple instructions per cycle using out-o
   - Perfect **cache hierarchy** → no memory stalls  
 Together, these enable analysis of instruction throughput under *idealized core conditions*.
 
----
-
 This simulator’s dynamic scheduling approach is based on **Tomasulo’s algorithm**, originally developed for the IBM System/360 Model 91. 
 
 It extends Tomasulo’s core concepts including register renaming, out of order issue, and tag based data forwarding, along with modern architectural features such as a **Reorder Buffer (ROB)** for in order retirement and a **Rename Map Table (RMT)** for precise state tracking. These structures reflect the principles used in today’s superscalar processors.
