@@ -1,97 +1,102 @@
 # Out-of-Order Superscalar Processor Simulator
-This repository documents my implementation of a **dynamic superscalar out-of-order processor simulator** written in **C++**, developed as part of **ECE 563 – Microprocessor Architecture (Prof. Eric Rotenberg, North Carolina State University)**.  
+This repository documents my implementation of a **cycle-accurate Out-of-Order (OOO) Superscalar Processor Simulator** written in **C++**, developed as part of **ECE 563 – Microprocessor Architecture (Prof. Eric Rotenberg, North Carolina State University)**.
 
-The simulator models a **multi-issue, dynamically scheduled CPU pipeline**, incorporating instruction-level parallelism through **register renaming**, **issue queue scheduling**, and **a reorder buffer (ROB)** for in-order retirement.
+The simulator models the **core microarchitecture** of a modern superscalar processor with **dynamic scheduling**, **register renaming**, and **in-order retirement**.  
+It supports configurable **pipeline width (WIDTH)**, **Reorder Buffer size (ROB_SIZE)**, and **Issue Queue size (IQ_SIZE)** for exploring instruction-level parallelism (ILP).
+
+---
 
 ## Overview
-This simulator focuses on **dynamic instruction scheduling**, assuming:
-- **Perfect branch prediction** → no recovery from misprediction.  
-- **Perfect instruction and data caches** → no stalls when fetching instructions or accessing data.  
+Modern high-performance CPUs execute multiple instructions per cycle using out-of-order techniques.  
+This simulator captures those key concepts by implementing:
 
-Hence, the core emphasis is on **modeling the dynamic scheduling logic** and capturing pipeline timing behavior in an out-of-order (OOO) superscalar CPU.
+- **Dynamic scheduling** with *register renaming* and *data dependency tracking*  
+- **Superscalar issue** — up to `WIDTH` instructions can enter the pipeline per cycle  
+- **Reorder Buffer (ROB)** ensuring in-order commitment and precise exceptions  
+- **Issue Queue (IQ)** handling out-of-order instruction dispatch when operands are ready  
+- **Rename Map Table (RMT)** eliminating WAR/WAW hazards  
+- **Perfect memory and branch assumptions:**  
+  - Perfect **branch prediction** → no misprediction recovery  
+  - Perfect **cache hierarchy** → no memory stalls  
 
-It implements:
-- Register renaming (eliminating WAR/WAW hazards)  
-- Reorder Buffer for precise in-order retirement  
-- Issue Queue scheduling based on operand readiness  
-- Multiple functional units (FUs) with realistic execution latency  
-- Fully pipelined stages, with configurable window and width parameters  
-- Detailed per-instruction and per-stage timing output  
+Together, these enable analysis of instruction throughput under *idealized core conditions*.
+
+---
 
 ## Repository Structure
 ```bash
 ooo-superscalar-sim/
-├── src/                     # C++ source and header files
-├── traces/                  # Input traces (PC, op_type, src/dst registers)
-├── ref_validation_runs/     # Gradescope validation reference outputs
-├── Makefile                 # Builds simulator → ./sim
+├── src/                    # C++ sources implementing the OOO pipeline stages
+├── traces/                 # Instruction traces used as simulator input
+├── assets/                 # Architecture diagrams (for README)
+├── Makefile                # Builds simulator → ./sim
 └── README.md
 ```
 
-## Architecture
-<p align="center"><em>Figure 1 – Superscalar Out-of-Order Pipeline Architecture</em></p> <div align="center"> <pre>
+## From In-Order to Out-of-Order
+<p align="center"> <img src="./assets/inorder-to-ooo.png" width="750"><br> <em>Figure 1 – Evolution from an in-order pipeline to an out-of-order (OOO) superscalar design. Introducing rename, dispatch, and issue stages enables dynamic scheduling and register renaming.</em> </p>
 
-+----------------+ +------------+ +------------+ +-------------+
-| FETCH | -> | DECODE | -> | RENAME | -> | REG-READ |
-+----------------+ +------------+ +------------+ +-------------+
-|
-v
-+-----------+
-| DISPATCH |
-+-----------+
-|
-+--------+--------+
-| |
-+-----------+ +-----------+
-| ISSUE Q | --> | EXECUTE |
-| (ready?) | | (FUs w/ |
-| | | latency) |
-+-----------+ +-----------+
-| |
-+--------+--------+
-|
-+-----------+
-| WRITEBACK |
-+-----------+
-|
-+-----------+
-| RETIRE |
-| (in order)|
-+-----------+
-|
-+-----------+
-| ROB |
-| (status, |
-| result) |
-+-----------+
+Traditional in-order pipelines stall when operands are unavailable or dependencies exist. By adding Rename, Dispatch, and Issue stages, the processor decouples instruction scheduling from execution:
+- Instructions are inserted in-order into the Issue Queue after renaming.
+- They execute out-of-order when source operands become ready.
+- Retirement occurs strictly in-order via the ROB, maintaining precise architectural state.
 
-</pre> </div>
+This transformation removes WAR/WAW hazards and increases ILP by allowing independent operations to proceed early.
 
-### Cache Module (`CACHE`)
-A generic cache model that can be used as L1, L2, or any other level:
-- Parameterized by `SIZE`, `ASSOC`, and `BLOCKSIZE`
-- Implements **LRU** replacement and **Write-Back + Write-Allocate (WBWA)** policy
-- Handles reads, writes, dirty evictions, and block allocations to the next level 
+# Architecture
+<p align="center">
+  <img src="./assets/ooo-architecture.png" width="700"><br>
+  <em>Figure 1 – Out-of-Order Superscalar Pipeline showing all stages, Rename Map Table (RMT), Issue Queue (IQ), and Reorder Buffer (ROB).</em>
+</p>
 
-### Stream Buffer Prefetcher
-Integrated within the cache (L2 for ECE 563). Each Stream Buffer holds `M` consecutive blocks and prefetches new blocks on misses.
-| Symbol | Meaning |
-|---------|----------|
-| `N` | Number of stream buffers |
-| `M` | Blocks per buffer |
-| **Policy** | LRU selection among buffers |
-| **Action** | On miss: prefetch X+1 to X+M ; on hit: shift and continue stream |
+Each pipeline stage processes up to WIDTH instructions per cycle, except Writeback, which is unbounded.
+Key hardware structures modeled in the simulator:
+| Component                             | Description                                                                                                      |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **Rename Map Table (RMT)**            | Tracks speculative mappings from logical to physical registers (ROB entries). Eliminates WAR/WAW hazards.        |
+| **Reorder Buffer (ROB)**              | Maintains instruction state until retirement; commits results in-order to the Architectural Register File (ARF). |
+| **Issue Queue (IQ)**                  | Holds ready and waiting instructions; performs wakeup and select each cycle.                                     |
+| **Architectural Register File (ARF)** | Stores committed register values; updated only at retirement.                                                    |
+| **Functional Units (FUs)**            | Model execution latency of different operations (simple ALU, complex ALU, MEM).                                  |
 
-This reduces Average Access Time (AAT) by overlapping future memory fetches.
+## Pipeline Stages
+1. Fetch – Fetch up to WIDTH instructions from the trace per cycle.
+2. Decode – Parse instruction fields (op_type, dst, src1, src2).
+3. Rename – Map logical registers to ROB entries via the Rename Map Table.
+4. Register Read – Check operand readiness; read or wait for producer tags.
+5. Dispatch – Insert renamed instructions into the Issue Queue (in-order).
+6. Issue – Select ready instructions (out-of-order) and send to execution units.
+7. Execute – Simulate latency for each operation type.
+8. Writeback – Broadcast results to dependent instructions (tag wakeup).
+9. Retire – Commit completed instructions in program order from the ROB.
+
+## Trace Format
+Each input trace contains one instruction per line, representing the architectural state visible to the front end.
+```bash
+<PC> <op_type> <dest> <src1> <src2>
+```
+| Field          | Meaning                                   |                 |                    |
+| -------------- | ----------------------------------------- | --------------- | ------------------ |
+| `PC`           | Instruction program counter (hexadecimal) |                 |                    |
+| `op_type`      | Operation type: 0 = simple ALU            | 1 = complex ALU | 2 = mult/div / mem |
+| `dest`         | Destination logical register (–1 if none) |                 |                    |
+| `src1`, `src2` | Source logical registers (–1 if unused)   |                 |                    |
+
+Example:
+```bash
+0x00403000 0 3 1 2
+0x00403004 1 6 3 5
+0x00403008 2 8 6 -1
+```
 
 ## Compilation
 You can compile the simulator using the provided Makefile or manually.
 
-### Using Makefile (recommended)
+### Using Makefile
 ```bash 
 make
 ```
-This compiles `src/sim.cc` and produces an executable named `sim`.
+This compiles `src/sim_proc.cc` and produces an executable named `sim`.
 
 To clean build files:
 ```bash
@@ -100,106 +105,45 @@ make clean
 
 ### Manual compilation
 ```bash
-g++ -std=c++11 -O3 src/sim.cc -o sim -lm
+g++ -std=c++11 -O3 src/sim_proc.cc -o sim -lm
 ```
 
 ## Running the Simulator
 Run the simulator with:
 ```bash 
-./sim <BLOCKSIZE> <L1_SIZE> <L1_ASSOC> <L2_SIZE> <L2_ASSOC> <PREF_N> <PREF_M> <trace_file>
+./sim <WIDTH> <ROB_SIZE> <IQ_SIZE> <trace_file>
 ```
 Example:
 ```bash
-./sim 32 8192 4 262144 8 3 10 traces/gcc_trace.txt
+./sim 4 128 64 traces/gcc_trace.txt
 ```
+| Argument     | Description                                     |
+| ------------ | ----------------------------------------------- |
+| `WIDTH`      | Superscalar width (instructions per cycle)      |
+| `ROB_SIZE`   | Entries in the Reorder Buffer                   |
+| `IQ_SIZE`    | Entries in the Issue Queue                      |
+| `trace_file` | Input instruction trace (e.g., `gcc_trace.txt`) |
 
-| Argument | Description |
-|-----------|-------------|
-| `BLOCKSIZE` | Bytes per block (power of 2) |
-| `L1_SIZE`, `L1_ASSOC` | L1 cache size and associativity |
-| `L2_SIZE`, `L2_ASSOC` | L2 cache size and associativity (0 = disabled) |
-| `PREF_N`, `PREF_M` | Stream buffer count and depth (0 0 = disabled) |
-| `trace_file` | Input memory trace file |
-
-## Trace Format
-Each line in the trace represents a memory access:
-```bash
-r|w <hex_address>
-```
-
-Example:
-```bash
-r ffe04540
-w 0eff2340
-r ffe04548
-```
-
-## Output Statistics
-The simulator prints results following Gradescope’s format:
-| Metric | Description |
-|---------|-------------|
-| L1 reads / L1 writes | Total accesses |
-| L1 miss rate (MRL1) | Read + write misses / total |
-| L2 miss rate (MRL2) | Miss rate from CPU’s perspective |
-| Writebacks | Dirty block evictions |
-| Prefetch requests | Stream-buffer generated requests |
-| Total memory traffic | Total blocks transferred to/from memory |
-| AAT | Average Access Time (ns) |
-
-
-## Performance Equations
-*Note:* Hit times and energy numbers are obtained from **CACTI 7.0** simulations for various cache configurations.
-### Average Access Time (AAT)
-**AAT = HT<sub>L1</sub> + MR<sub>L1</sub> × (HT<sub>L2</sub> + MR<sub>L2</sub> × MP)**
-where  
-- **HT** – Hit Time (from CACTI)  
-- **MR** – Miss Rate (from simulator)  
-- **MP** – Miss Penalty (main memory latency)
-
-### Area & Energy (CACTI-based)
-The CACTI tool provides:
-- Access time (ns)
-- Area (mm²)
-- Energy per access (nJ)
-
-These values are used to estimate overall performance, area, and energy.
-
-## Experimental Evaluation
-A set of experiments were conducted to explore cache design trade-offs:
-1. **L1 Cache Exploration — Size vs. Associativity**
-   Analyzed how cache capacity and associativity affect miss rate and AAT.
-2. **L1 + L2 Hierarchy**
-   Compared performance of two-level hierarchies versus L1-only systems.
-3. **Block Size Study**
-   Demonstrated trade-offs between spatial locality and cache pollution.
-4. **Stream Buffer Prefetching (ECE 563 Extension)**
-   Implemented configurable `(PREF_N, PREF_M)` stream buffers and evaluated their impact on sequential traces.
-
-## Summary
-- Moderate associativity (4-way) provides optimal performance-to-area ratio.
-- Adding an L2 cache significantly lowers AAT compared to single-level hierarchies.
-- Small caches favor smaller blocks; large caches benefit from spatial locality.
-- Stream Buffer Prefetching improves miss rate and AAT for sequential patterns (~10–15% latency reduction).
-
-Detailed numerical results and plots are available in the project report.
-
-## Full Report
-[View Full Report (PDF)](./report/report.pdf)
+## Design Assumptions
+- Perfect branch prediction → no recovery penalty.
+- Perfect memory subsystem → no cache misses.
+- Unlimited Writeback bandwidth.
+- All functional units are pipelined and operate concurrently.
+- Single clocked simulation loop: fetch → retire each cycle.
+- These assumptions isolate core out-of-order behavior to study scheduling, dependency resolution, and ILP limits.
 
 ## Tools and Environment
 - Language: C++ (C++11)
 - Platform: Linux / ETX Cluster
 - Build System: Makefile
 - Validation: Gradescope Autograder
-- Traces: SPEC 2006 / 2017, custom microbenchmarks
-- Analysis: CACTI tool for area and energy estimation
+- Traces: gcc, perl
 
 ---
 
 ## References
-- ECE 563 – Microprocessor Architecture, North Carolina State University
-- Jouppi N., “Improving Direct-Mapped Cache Performance by the Addition of a Small Fully Associative Cache and Prefetch Buffers,” ISCA 1990
-- CACTI Tool Documentation – HP Labs
+- ECE 563 – Microprocessor Architecture, North Carolina State University.
+- John Hennessy & David Patterson, Computer Architecture: A Quantitative Approach.
 
 ---
 **Author:** Vishnuvardhan Chilukoti  
