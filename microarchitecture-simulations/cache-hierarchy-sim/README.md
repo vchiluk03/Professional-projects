@@ -37,7 +37,7 @@ A generic cache model that can be used as L1, L2, or any other level:
 - Handles reads, writes, dirty evictions, and block allocations to the next level 
 
 ### Stream Buffer Prefetcher
-Integrated within the cache (L2 for ECE 563). Each Stream Buffer holds `M` consecutive blocks and prefetches new blocks on misses.
+Integrated within the cache. Each Stream Buffer holds `M` consecutive blocks and prefetches new blocks on misses.
 | Symbol | Meaning |
 |---------|----------|
 | `N` | Number of stream buffers |
