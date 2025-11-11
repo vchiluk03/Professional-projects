@@ -26,7 +26,8 @@ Each simulator represents one layer of a single-core CPU’s execution model:
 - The **Cache Simulator** models memory hierarchy behavior and latency.
 - The **Branch Predictor** models control speculation for better instruction flow.
 - The **Out-of-Order Processor** models dynamic scheduling and register renaming.
-Combined, they form a modular exploration of core-level microarchitecture, covering memory and control subsystems as well as pipeline execution and retirement.
+
+Together, these simulators provide a modular understanding of core-level microarchitecture, covering memory hierarchy, control logic, as well as pipeline execution and retirement.
 
 ---
 ## Tools and Environment
