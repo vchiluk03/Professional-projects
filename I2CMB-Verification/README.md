@@ -1,5 +1,5 @@
 # Functional Verification of I²C Multi-Bus Master (Wishbone–I²C Bridge)
-This project presents the functional verification of an I²C Multi-Bus Master, a Wishbone–I²C bridge IP capable of controlling multiple I²C buses through a memory-mapped Wishbone interface. Developed as part of ECE 745 : ASIC Verification at North Carolina State University, this work implements the full verification lifecycle using SystemVerilog and the NCSU UVM-style base class library, including interface verification, layered testbench construction, coverage planning, and closure.
+This project presents the functional verification of an I²C Multi-Bus Master, a Wishbone to I²C bridge IP capable of controlling multiple I²C buses through a memory-mapped Wishbone interface. Developed as part of ECE 745 : ASIC Verification at North Carolina State University, this work implements the full verification lifecycle using SystemVerilog and the NCSU UVM-style base class library, including interface verification, layered testbench construction, coverage planning, and closure.
 
 ---
 ## Repository Structure
