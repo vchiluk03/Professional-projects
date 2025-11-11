@@ -22,6 +22,7 @@ Each simulator represents one layer of a single-core CPU’s execution model:
   <img src="./assets/core-flow-ece563.png" width="750"><br>
   <em>Figure 2 – Integration of caches, branch prediction, and out-of-order execution within a single-core superscalar processor.</em>
 </p>
+
 - The **Cache Simulator** models memory hierarchy behavior and latency.
 - The **Branch Predictor** models control speculation for better instruction flow.
 - The **Out-of-Order Processor** models dynamic scheduling and register renaming.
